@@ -1,0 +1,39 @@
+Loading game...
+
+========== GAME START ==========
+Players: You (Human), AI 1 (AI), AI 2 (AI)
+First player: You
+
+
+========== ROUND 1 ==========
+You:
+  Rolled: [2, 6, 1, 3]
+  Move: 10 (eval: 25.0)
+Group more dice or end turn:
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#roll-dice')
+    - locator resolved to <button disabled id="roll-dice">Roll Dice</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+      - waiting 100ms
+    57 × waiting for element to be visible, enabled and stable
+       - element is not enabled
+     - retrying click action
+       - waiting 500ms
+
+    at /workspace/global/mountain-goats/playtest-final.js:37:28 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.22.2
