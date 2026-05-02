@@ -93,44 +93,52 @@ function toggleDieSelection(idx) {
 
 function makeMove() {
     if (gameState.diceSum < 5 || gameState.diceSum > 10) return;
-    gameState.phase = 'move';
-    updateStatus(`Move goat to space ${gameState.diceSum}`);
-    document.querySelectorAll('.space').forEach(space => {
-        if (parseInt(space.dataset.number) === gameState.diceSum) {
-            space.classList.add('valid');
+
+    const targetMountainNum = gameState.diceSum;
+    const mountainIdx = mountains.findIndex(m => m.number === targetMountainNum);
+
+    // Find player's goat on this mountain (lowest position)
+    let goatFound = false;
+    let fromSpaceIdx = -1;
+    for (let sIdx = 0; sIdx < gameState.board[mountainIdx].length; sIdx++) {
+        const goats = gameState.board[mountainIdx][sIdx];
+        const idx = goats.findIndex(g => g.player === gameState.currentPlayer);
+        if (idx > -1) {
+            const goat = goats.splice(idx, 1)[0];
+            fromSpaceIdx = sIdx;
+            const destSpaceIdx = sIdx + 1;
+
+            if (destSpaceIdx >= mountains[mountainIdx].spaces) {
+                updateStatus(`Already at peak of mountain ${targetMountainNum}!`);
+                goats.splice(idx, 0, goat);
+                return;
+            }
+
+            moveGoatToSpace(goat, mountainIdx, destSpaceIdx);
+            goatFound = true;
+            break;
         }
-    });
+    }
+
+    // No goat on mountain - place new from hand at bottom
+    if (!goatFound && gameState.players[gameState.currentPlayer].goatsInHand > 0) {
+        const goat = {
+            player: gameState.currentPlayer,
+            color: gameState.players[gameState.currentPlayer].color
+        };
+        gameState.players[gameState.currentPlayer].goatsInHand--;
+        moveGoatToSpace(goat, mountainIdx, 0);
+    } else if (!goatFound) {
+        updateStatus(`No goat available for mountain ${targetMountainNum}!`);
+    }
 }
 
-function handleSpaceClick(mountainIdx, spaceIdx) {
-    if (gameState.phase !== 'move') return;
+function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
     const mountain = mountains[mountainIdx];
-    if (mountain.number !== gameState.diceSum) return;
-
-    // Find a goat to move (simplified: just use first available)
-    let goat = null;
-    if (gameState.players[gameState.currentPlayer].goatsInHand > 0 && spaceIdx === 0) {
-        goat = { player: gameState.currentPlayer, color: gameState.players[gameState.currentPlayer].color };
-        gameState.players[gameState.currentPlayer].goatsInHand--;
-    }
-
-    if (!goat) {
-        for (let mIdx = 0; mIdx < mountains.length && !goat; mIdx++) {
-            for (let sIdx = 0; sIdx < gameState.board[mIdx].length && !goat; sIdx++) {
-                const goats = gameState.board[mIdx][sIdx];
-                const idx = goats.findIndex(g => g.player === gameState.currentPlayer);
-                if (idx > -1) {
-                    goat = goats.splice(idx, 1)[0];
-                }
-            }
-        }
-    }
-
-    if (!goat) return;
-
     const destGoats = gameState.board[mountainIdx][spaceIdx];
     const isPeak = spaceIdx === mountain.spaces - 1;
 
+    // Peak: kick others off
     if (isPeak && destGoats.length > 0) {
         destGoats.forEach(g => gameState.players[g.player].goatsInHand++);
         destGoats.length = 0;
@@ -138,12 +146,14 @@ function handleSpaceClick(mountainIdx, spaceIdx) {
 
     destGoats.push(goat);
 
+    // Score on peak
     if (isPeak && gameState.pointTokens[mountain.number] > 0) {
         gameState.pointTokens[mountain.number]--;
         gameState.players[goat.player].score += mountain.number;
         document.getElementById(`tokens-${mountain.number}`).textContent = gameState.pointTokens[mountain.number];
     }
 
+    // Remove used dice
     gameState.selectedDice.sort((a, b) => b - a).forEach(idx => gameState.diceRoll.splice(idx, 1));
     gameState.selectedDice = [];
 
@@ -156,7 +166,6 @@ function handleSpaceClick(mountainIdx, spaceIdx) {
         gameState.phase = 'group';
         renderDice();
         updateStatus('Group more dice or end turn');
-        document.querySelectorAll('.space').forEach(s => s.classList.remove('valid'));
     }
 }
 
@@ -175,7 +184,6 @@ function renderBoard() {
                 if (goats.length > 1) goatEl.style.marginLeft = `${gIdx * 10}px`;
                 space.appendChild(goatEl);
             });
-            space.onclick = () => handleSpaceClick(mIdx, sIdx);
         }
     });
 }
