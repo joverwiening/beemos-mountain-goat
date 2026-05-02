@@ -6,8 +6,9 @@ const gameState = {
     selectedDice: [],
     diceSum: 0,
     players: [
-        { name: 'Player 1', color: 'yellow', score: 0 },
-        { name: 'Player 2', color: 'red', score: 0 }
+        { name: 'You', color: 'yellow', score: 0, isAI: false },
+        { name: 'AI 1', color: 'red', score: 0, isAI: true },
+        { name: 'AI 2', color: 'cyan', score: 0, isAI: true }
     ],
     board: {}, // key: mountain index -> array of space arrays (bottom to top)
     pointTokens: { 5: 12, 6: 11, 7: 10, 8: 9, 9: 8, 10: 7 },
@@ -203,7 +204,96 @@ function updateStatus(msg) {
     document.getElementById('status-message').textContent = msg;
 }
 
+// AI Logic
+function findBestDiceGroup(diceRoll) {
+    // Find all valid groupings (sum 5-10)
+    const validGroups = [];
+    const n = diceRoll.length;
+
+    // Try all subsets
+    for (let mask = 1; mask < (1 << n); mask++) {
+        const group = [];
+        for (let i = 0; i < n; i++) {
+            if (mask & (1 << i)) group.push(i);
+        }
+        const sum = group.reduce((s, i) => s + diceRoll[i], 0);
+        if (sum >= 5 && sum <= 10) {
+            validGroups.push({ indices: group, sum });
+        }
+    }
+
+    // Prefer higher sums (higher mountains = more points)
+    validGroups.sort((a, b) => b.sum - a.sum);
+    return validGroups[0] || null;
+}
+
+function playAITurn() {
+    const player = gameState.players[gameState.currentPlayer];
+    if (!player.isAI) return;
+
+    setTimeout(() => {
+        // Roll dice
+        rollDice();
+
+        setTimeout(() => {
+            // Find best grouping and make move
+            const bestGroup = findBestDiceGroup(gameState.diceRoll);
+            if (bestGroup) {
+                gameState.selectedDice = bestGroup.indices;
+                gameState.diceSum = bestGroup.sum;
+                makeMove();
+
+                // If more dice remain, play again
+                if (gameState.diceRoll.length > 0 && gameState.currentPlayer === player && player.isAI) {
+                    playAITurn();
+                }
+            } else {
+                endTurn();
+            }
+        }, 800);
+    }, 1000);
+}
+
+// Override endTurn to trigger AI
+const originalEndTurn = endTurn;
+function endTurn() {
+    gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+    gameState.phase = 'roll';
+    gameState.diceRoll = [];
+    document.getElementById('roll-dice').disabled = false;
+    document.querySelectorAll('.space').forEach(s => s.classList.remove('valid'));
+    renderPlayers();
+
+    const currentPlayer = gameState.players[gameState.currentPlayer];
+    updateStatus(`${currentPlayer.name}: Roll dice`);
+
+    if (currentPlayer.isAI) {
+        playAITurn();
+    }
+}
+
+// Randomize turn order
+function shufflePlayers() {
+    for (let i = gameState.players.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [gameState.players[i], gameState.players[j]] = [gameState.players[j], gameState.players[i]];
+    }
+
+    // Find human player index
+    const humanIdx = gameState.players.findIndex(p => !p.isAI);
+    gameState.currentPlayer = humanIdx; // Start with human
+
+    updateStatus(`${gameState.players[gameState.currentPlayer].name}: Roll dice`);
+}
+
 document.getElementById('roll-dice').onclick = rollDice;
 document.getElementById('make-move').onclick = makeMove;
+
+shufflePlayers();
 renderBoard();
 renderPlayers();
+
+// Check if AI goes first
+if (gameState.players[gameState.currentPlayer].isAI) {
+    playAITurn();
+}

@@ -156,3 +156,4 @@ button:disabled {
     background: #1a1f24;
     border-radius: 8px;
 }
+.goat-cyan { filter: hue-rotate(180deg) saturate(1.5); }
