@@ -92,6 +92,14 @@ button:disabled {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    position: relative;
+}
+
+.mountain::after {
+    content: '';
+    display: block;
+    height: 35px;
+    margin-top: 5px;
 }
 
 .space {
@@ -191,6 +199,14 @@ button:disabled {
 .goat {
     position: absolute;
     font-size: 24px;
+}
+
+.goat-at-base {
+    position: absolute;
+    font-size: 20px;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .goat-yellow { filter: hue-rotate(45deg); }

@@ -233,7 +233,12 @@ function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
 
 function renderBoard() {
     mountains.forEach((mountain, mIdx) => {
+        const mountainElement = document.querySelectorAll(`.mountain-${mountain.number}`)[0];
         const spaces = document.querySelectorAll(`.mountain-${mountain.number} .space`);
+
+        // Clear existing goats
+        mountainElement.querySelectorAll('.goat, .goat-at-base').forEach(g => g.remove());
+
         for (let sIdx = 0; sIdx < mountain.spaces; sIdx++) {
             // HTML: spaces[0]=peak, spaces[last]=bottom
             // State: board[mIdx][0]=bottom, board[mIdx][last]=peak
@@ -242,15 +247,29 @@ function renderBoard() {
             const stateIdx = mountain.spaces - 1 - sIdx;
 
             if (!spaceElement) continue;
-            spaceElement.querySelectorAll('.goat').forEach(g => g.remove());
+
             const goats = gameState.board[mIdx][stateIdx];
-            goats.forEach((goat, gIdx) => {
-                const goatEl = document.createElement('div');
-                goatEl.className = `goat goat-${goat.color}`;
-                goatEl.textContent = '🐐';
-                if (goats.length > 1) goatEl.style.marginLeft = `${gIdx * 10}px`;
-                spaceElement.appendChild(goatEl);
-            });
+
+            // Special handling for bottom space (stateIdx === 0)
+            if (stateIdx === 0) {
+                // Render goats BELOW the mountain, not in the space
+                goats.forEach((goat, gIdx) => {
+                    const goatEl = document.createElement('div');
+                    goatEl.className = `goat-at-base goat-${goat.color}`;
+                    goatEl.textContent = '🐐';
+                    goatEl.style.marginLeft = `${gIdx * 15}px`;
+                    mountainElement.appendChild(goatEl);
+                });
+            } else {
+                // Normal rendering for other spaces
+                goats.forEach((goat, gIdx) => {
+                    const goatEl = document.createElement('div');
+                    goatEl.className = `goat goat-${goat.color}`;
+                    goatEl.textContent = '🐐';
+                    if (goats.length > 1) goatEl.style.marginLeft = `${gIdx * 10}px`;
+                    spaceElement.appendChild(goatEl);
+                });
+            }
         }
     });
 }
@@ -264,13 +283,19 @@ function renderPlayers() {
 }
 
 function endTurn() {
-    gameState.currentPlayer = 1 - gameState.currentPlayer;
+    gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
     gameState.phase = 'roll';
     gameState.diceRoll = [];
     document.getElementById('roll-dice').disabled = false;
     document.querySelectorAll('.space').forEach(s => s.classList.remove('valid'));
     renderPlayers();
-    updateStatus(`${gameState.players[gameState.currentPlayer].name}: Roll dice`);
+
+    const currentPlayer = gameState.players[gameState.currentPlayer];
+    updateStatus(`${currentPlayer.name}: Roll dice`);
+
+    if (currentPlayer.isAI) {
+        playAITurn();
+    }
 }
 
 function updateStatus(msg) {
@@ -384,23 +409,7 @@ function playAITurn() {
     }, 1000);
 }
 
-// Override endTurn to trigger AI
-const originalEndTurn = endTurn;
-function endTurn() {
-    gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
-    gameState.phase = 'roll';
-    gameState.diceRoll = [];
-    document.getElementById('roll-dice').disabled = false;
-    document.querySelectorAll('.space').forEach(s => s.classList.remove('valid'));
-    renderPlayers();
-
-    const currentPlayer = gameState.players[gameState.currentPlayer];
-    updateStatus(`${currentPlayer.name}: Roll dice`);
-
-    if (currentPlayer.isAI) {
-        playAITurn();
-    }
-}
+// endTurn function is defined above (line 266)
 
 // Randomize turn order
 function shufflePlayers() {
