@@ -227,6 +227,59 @@ function updateStatus(msg) {
 }
 
 // AI Logic
+function evaluateMove(sum) {
+    const targetMountainIdx = mountains.findIndex(m => m.number === sum);
+    const currentPlayer = gameState.currentPlayer;
+
+    let score = sum; // Base score: mountain value
+
+    // Check if we have a goat on target mountain that can move up
+    let canMoveUp = false;
+    let nearPeak = false;
+
+    for (let sIdx = 0; sIdx < gameState.board[targetMountainIdx].length; sIdx++) {
+        const goats = gameState.board[targetMountainIdx][sIdx];
+        if (goats.some(g => g.player === currentPlayer)) {
+            if (sIdx + 1 < mountains[targetMountainIdx].spaces) {
+                canMoveUp = true;
+                const distanceToPeak = mountains[targetMountainIdx].spaces - 1 - sIdx;
+                if (distanceToPeak === 1) {
+                    // One move from peak - prioritize heavily
+                    score += 15;
+                    nearPeak = true;
+                } else if (distanceToPeak === 2) {
+                    score += 5;
+                }
+            }
+            break;
+        }
+    }
+
+    // Bonus for being able to move up (efficient progress)
+    if (canMoveUp && !nearPeak) {
+        score += 3;
+    }
+
+    // Check if peak is available or has opponent
+    const peakIdx = mountains[targetMountainIdx].spaces - 1;
+    const peakGoats = gameState.board[targetMountainIdx][peakIdx];
+    if (peakGoats.length > 0 && !peakGoats.some(g => g.player === currentPlayer)) {
+        // Opponent on peak - kicking them off is valuable
+        score += 5;
+    }
+
+    // Check remaining tokens
+    if (gameState.pointTokens[sum] === 0) {
+        // No tokens left, mountain is less valuable
+        score -= 20;
+    } else if (gameState.pointTokens[sum] <= 2) {
+        // Few tokens left - rush it
+        score += 8;
+    }
+
+    return score;
+}
+
 function findBestDiceGroup(diceRoll) {
     // Find all valid groupings (sum 5-10)
     const validGroups = [];
@@ -240,12 +293,16 @@ function findBestDiceGroup(diceRoll) {
         }
         const sum = group.reduce((s, i) => s + diceRoll[i], 0);
         if (sum >= 5 && sum <= 10) {
-            validGroups.push({ indices: group, sum });
+            validGroups.push({
+                indices: group,
+                sum,
+                score: evaluateMove(sum)
+            });
         }
     }
 
-    // Prefer higher sums (higher mountains = more points)
-    validGroups.sort((a, b) => b.sum - a.sum);
+    // Sort by evaluated score (strategic, not just greedy)
+    validGroups.sort((a, b) => b.score - a.score);
     return validGroups[0] || null;
 }
 
