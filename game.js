@@ -257,16 +257,24 @@ function renderBoard() {
                     const goatEl = document.createElement('div');
                     goatEl.className = `goat-at-base goat-${goat.color}`;
                     goatEl.textContent = '🐐';
-                    goatEl.style.marginLeft = `${gIdx * 15}px`;
+                    // Random horizontal positioning
+                    const randomOffset = (Math.random() - 0.5) * 30;
+                    goatEl.style.left = `calc(50% + ${randomOffset}px)`;
+                    goatEl.style.transform = 'translateX(-50%)';
                     mountainElement.appendChild(goatEl);
                 });
             } else {
-                // Normal rendering for other spaces
+                // Normal rendering for other spaces with random positioning
                 goats.forEach((goat, gIdx) => {
                     const goatEl = document.createElement('div');
                     goatEl.className = `goat goat-${goat.color}`;
                     goatEl.textContent = '🐐';
-                    if (goats.length > 1) goatEl.style.marginLeft = `${gIdx * 10}px`;
+                    // Random positioning within the space
+                    const randomX = 20 + Math.random() * 60;
+                    const randomY = 20 + Math.random() * 60;
+                    goatEl.style.left = `${randomX}%`;
+                    goatEl.style.top = `${randomY}%`;
+                    goatEl.style.transform = 'translate(-50%, -50%)';
                     spaceElement.appendChild(goatEl);
                 });
             }
