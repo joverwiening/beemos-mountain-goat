@@ -95,34 +95,56 @@ function makeMove() {
     if (gameState.diceSum < 5 || gameState.diceSum > 10) return;
 
     const targetMountainNum = gameState.diceSum;
-    const mountainIdx = mountains.findIndex(m => m.number === targetMountainNum);
+    const targetMountainIdx = mountains.findIndex(m => m.number === targetMountainNum);
 
-    // Find player's goat on this mountain (lowest position)
-    let goatFound = false;
-    let fromSpaceIdx = -1;
-    for (let sIdx = 0; sIdx < gameState.board[mountainIdx].length; sIdx++) {
-        const goats = gameState.board[mountainIdx][sIdx];
-        const idx = goats.findIndex(g => g.player === gameState.currentPlayer);
-        if (idx > -1) {
-            const goat = goats.splice(idx, 1)[0];
-            fromSpaceIdx = sIdx;
-            const destSpaceIdx = sIdx + 1;
+    // Find ANY goat owned by current player on ANY mountain
+    // Strategy: prefer goats on target mountain moving up, otherwise take any goat to bottom of target
+    let bestMove = null;
 
-            if (destSpaceIdx >= mountains[mountainIdx].spaces) {
-                updateStatus(`Already at peak of mountain ${targetMountainNum}!`);
-                goats.splice(idx, 0, goat);
-                return;
+    for (let mIdx = 0; mIdx < mountains.length; mIdx++) {
+        for (let sIdx = 0; sIdx < gameState.board[mIdx].length; sIdx++) {
+            const goats = gameState.board[mIdx][sIdx];
+            const goatIdx = goats.findIndex(g => g.player === gameState.currentPlayer);
+
+            if (goatIdx > -1) {
+                const isOnTargetMountain = mIdx === targetMountainIdx;
+                const canMoveUp = isOnTargetMountain && sIdx + 1 < mountains[targetMountainIdx].spaces;
+
+                if (canMoveUp) {
+                    // Best move: already on target mountain, move up one level
+                    bestMove = {
+                        fromMountain: mIdx,
+                        fromSpace: sIdx,
+                        goatIdx: goatIdx,
+                        toMountain: targetMountainIdx,
+                        toSpace: sIdx + 1
+                    };
+                    break;
+                } else if (!bestMove) {
+                    // Fallback: move any goat to bottom of target mountain
+                    bestMove = {
+                        fromMountain: mIdx,
+                        fromSpace: sIdx,
+                        goatIdx: goatIdx,
+                        toMountain: targetMountainIdx,
+                        toSpace: 0
+                    };
+                }
             }
-
-            moveGoatToSpace(goat, mountainIdx, destSpaceIdx);
-            goatFound = true;
-            break;
         }
+        if (bestMove && bestMove.toSpace > 0) break; // Found an "up" move, take it
     }
 
-    if (!goatFound) {
-        updateStatus(`Your goat is not on mountain ${targetMountainNum}!`);
+    if (!bestMove) {
+        updateStatus(`No goats available to move!`);
+        return;
     }
+
+    // Execute the move
+    const goats = gameState.board[bestMove.fromMountain][bestMove.fromSpace];
+    const goat = goats.splice(bestMove.goatIdx, 1)[0];
+
+    moveGoatToSpace(goat, bestMove.toMountain, bestMove.toSpace);
 }
 
 function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
