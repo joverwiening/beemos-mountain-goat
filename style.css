@@ -1,160 +1,121 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: 'Arial', sans-serif;
-    background: #1a1f24;
-    color: #ffffff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: #2a2f35;
+    color: white;
     padding: 20px;
 }
 
 #game-container {
-    max-width: 1400px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* Header - Dice Pool and Status */
-#game-header {
-    background: #2a2f35;
-    border-radius: 10px;
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#dice-area {
+    background: #1a1f24;
     padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
-#dice-pool {
+#dice-display {
     display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
-.dice-token {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+.die {
+    width: 60px;
+    height: 60px;
+    background: white;
+    color: black;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 8px;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    position: relative;
+    border: 3px solid transparent;
 }
 
-.dice-token:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+.die.selected {
+    border-color: #4CAF50;
+    background: #e8f5e9;
 }
 
-.dice-token.selected {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(255,255,255,0.6);
-}
-
-.dice-token[data-value="5"] { background: linear-gradient(135deg, #4a9d5f, #6db87d); }
-.dice-token[data-value="6"] { background: linear-gradient(135deg, #d4853d, #e69a52); }
-.dice-token[data-value="7"] { background: linear-gradient(135deg, #8b5a3c, #a67458); }
-.dice-token[data-value="8"] { background: linear-gradient(135deg, #6b7b8a, #8695a3); }
-.dice-token[data-value="9"] { background: linear-gradient(135deg, #5ba7c2, #7ec4d9); }
-.dice-token[data-value="10"] { background: linear-gradient(135deg, #a8d5e8, #c5e7f2); }
-
-.dice-number {
-    font-size: 32px;
-    font-weight: bold;
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #4CAF50;
     color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
 }
 
-.dice-count {
-    font-size: 14px;
-    color: rgba(255,255,255,0.9);
-    margin-top: 2px;
+button:disabled {
+    background: #666;
+    cursor: not-allowed;
 }
 
-#game-status {
+#point-tokens {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    text-align: right;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #1a1f24;
+    border-radius: 8px;
 }
 
-#current-player {
-    font-size: 18px;
+.token-stack {
+    padding: 8px 15px;
+    background: #3a4149;
+    border-radius: 5px;
     font-weight: bold;
 }
 
-#game-message {
-    font-size: 14px;
-    color: #aabbcc;
-}
-
-/* Main Layout */
-#game-container > div:last-child {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 20px;
-}
-
-/* Game Board */
 #game-board {
-    background: #2a2f35;
-    border-radius: 10px;
-    padding: 30px;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 15px;
-    align-items: end;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-/* Mountains */
 .mountain {
     display: flex;
-    flex-direction: column-reverse;
-    gap: 8px;
+    flex-direction: column;
+    gap: 5px;
 }
 
-/* Mountain Spaces */
 .space {
-    width: 100%;
     aspect-ratio: 1;
-    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    border-radius: 10px;
     position: relative;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    border: 3px solid transparent;
 }
 
-.space:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+.space.valid {
+    border-color: yellow;
+    box-shadow: 0 0 10px yellow;
 }
 
-.space-number {
-    font-size: 48px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.6);
-    z-index: 1;
+.space.peak {
+    border: 3px solid gold;
 }
 
-/* Mountain Colors */
 .mountain-5 .space { background: linear-gradient(135deg, #4a9d5f, #6db87d); }
 .mountain-6 .space { background: linear-gradient(135deg, #d4853d, #e69a52); }
 .mountain-7 .space { background: linear-gradient(135deg, #8b5a3c, #a67458); }
@@ -162,130 +123,36 @@ body {
 .mountain-9 .space { background: linear-gradient(135deg, #5ba7c2, #7ec4d9); }
 .mountain-10 .space { background: linear-gradient(135deg, #a8d5e8, #c5e7f2); }
 
-/* Goat Pieces */
 .goat {
     position: absolute;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    border: 3px solid white;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    cursor: pointer;
-    transition: transform 0.2s;
-    z-index: 2;
+    font-size: 24px;
 }
 
-.goat:hover {
-    transform: scale(1.1);
-}
+.goat-yellow { filter: hue-rotate(45deg); }
+.goat-red { filter: hue-rotate(0deg); }
 
-.goat.selectable {
-    box-shadow: 0 0 15px rgba(255,255,255,0.8);
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-/* Goat Colors */
-.goat-green { background: #6db87d; }
-.goat-orange { background: #e69a52; }
-.goat-brown { background: #8b5a3c; }
-.goat-cyan { background: #5ba7c2; }
-.goat-pink { background: #d65f5f; }
-
-/* Player Panels */
-#player-panels {
-    background: #2a2f35;
-    border-radius: 10px;
-    padding: 20px;
-    min-width: 250px;
+#players {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-.player-panel {
+.player {
+    padding: 15px;
     background: #1a1f24;
     border-radius: 8px;
+    opacity: 0.6;
+}
+
+.player.active {
+    opacity: 1;
+    border: 2px solid #4CAF50;
+}
+
+#game-status {
+    text-align: center;
     padding: 15px;
-}
-
-.player-panel.active {
-    border: 2px solid #4a9d5f;
-    box-shadow: 0 0 15px rgba(74, 157, 95, 0.3);
-}
-
-.player-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.player-name {
-    font-weight: bold;
-    font-size: 16px;
-}
-
-.player-score {
-    font-size: 20px;
-    font-weight: bold;
-    color: #4a9d5f;
-}
-
-.player-goats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
-
-.goat-inventory {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-}
-
-.goat-inventory .goat-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid white;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-    #game-board {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .space-number {
-        font-size: 36px;
-    }
-}
-
-@media (max-width: 768px) {
-    #game-board {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    #dice-pool {
-        justify-content: center;
-    }
-
-    #game-container > div:last-child {
-        grid-template-columns: 1fr;
-    }
-
-    .dice-token {
-        width: 60px;
-        height: 60px;
-    }
-
-    .dice-number {
-        font-size: 24px;
-    }
+    background: #1a1f24;
+    border-radius: 8px;
 }
