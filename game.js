@@ -6,8 +6,8 @@ const gameState = {
     selectedDice: [],
     diceSum: 0,
     players: [
-        { name: 'Player 1', color: 'yellow', score: 0, goatsInHand: 6 },
-        { name: 'Player 2', color: 'red', score: 0, goatsInHand: 6 }
+        { name: 'Player 1', color: 'yellow', score: 0 },
+        { name: 'Player 2', color: 'red', score: 0 }
     ],
     board: {}, // key: mountain index -> array of space arrays (bottom to top)
     pointTokens: { 5: 12, 6: 11, 7: 10, 8: 9, 9: 8, 10: 7 },
@@ -29,11 +29,10 @@ mountains.forEach((m, idx) => {
     gameState.board[idx] = Array(m.spaces).fill(null).map(() => []);
 });
 
-// Place starting goats
+// Place starting goats - all players start with one goat at bottom of each mountain
 mountains.forEach((m, idx) => {
     gameState.players.forEach((player, pIdx) => {
         gameState.board[idx][0].push({ player: pIdx, color: player.color });
-        player.goatsInHand--;
     });
 });
 
@@ -120,16 +119,8 @@ function makeMove() {
         }
     }
 
-    // No goat on mountain - place new from hand at bottom
-    if (!goatFound && gameState.players[gameState.currentPlayer].goatsInHand > 0) {
-        const goat = {
-            player: gameState.currentPlayer,
-            color: gameState.players[gameState.currentPlayer].color
-        };
-        gameState.players[gameState.currentPlayer].goatsInHand--;
-        moveGoatToSpace(goat, mountainIdx, 0);
-    } else if (!goatFound) {
-        updateStatus(`No goat available for mountain ${targetMountainNum}!`);
+    if (!goatFound) {
+        updateStatus(`Your goat is not on mountain ${targetMountainNum}!`);
     }
 }
 
@@ -138,9 +129,11 @@ function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
     const destGoats = gameState.board[mountainIdx][spaceIdx];
     const isPeak = spaceIdx === mountain.spaces - 1;
 
-    // Peak: kick others off
+    // Peak: kick others off back to bottom of THIS mountain
     if (isPeak && destGoats.length > 0) {
-        destGoats.forEach(g => gameState.players[g.player].goatsInHand++);
+        destGoats.forEach(g => {
+            gameState.board[mountainIdx][0].push(g);
+        });
         destGoats.length = 0;
     }
 
@@ -193,7 +186,6 @@ function renderPlayers() {
         const el = document.getElementById(`player-${idx + 1}`);
         el.className = 'player' + (idx === gameState.currentPlayer ? ' active' : '');
         el.querySelector('.player-score span').textContent = player.score;
-        el.querySelector('.player-goats span').textContent = player.goatsInHand;
     });
 }
 
