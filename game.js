@@ -6,9 +6,9 @@ const gameState = {
     selectedDice: [],
     diceSum: 0,
     players: [
-        { name: 'You', color: 'yellow', score: 0, isAI: false },
-        { name: 'AI 1', color: 'red', score: 0, isAI: true },
-        { name: 'AI 2', color: 'cyan', score: 0, isAI: true }
+        { name: 'You', color: 'yellow', score: 0, isAI: false, inHand: 12 },
+        { name: 'AI 1', color: 'red', score: 0, isAI: true, inHand: 12 },
+        { name: 'AI 2', color: 'cyan', score: 0, isAI: true, inHand: 12 }
     ],
     board: {}, // key: mountain index -> array of space arrays (bottom to top)
     pointTokens: { 5: 12, 6: 11, 7: 10, 8: 9, 9: 8, 10: 7 },
@@ -25,17 +25,12 @@ const mountains = [
     { number: 10, spaces: 2 }
 ];
 
-// Initialize board
+// Initialize board - all spaces start empty
 mountains.forEach((m, idx) => {
     gameState.board[idx] = Array(m.spaces).fill(null).map(() => []);
 });
 
-// Place starting goats - all players start with one goat at bottom of each mountain
-mountains.forEach((m, idx) => {
-    gameState.players.forEach((player, pIdx) => {
-        gameState.board[idx][0].push({ player: pIdx, color: player.color });
-    });
-});
+// Players start with all goats in hand (tracked in player.inHand)
 
 function rollDice() {
     gameState.diceRoll = [
@@ -123,9 +118,9 @@ function makeMove() {
 
     const targetMountainNum = gameState.diceSum;
     const targetMountainIdx = mountains.findIndex(m => m.number === targetMountainNum);
+    const currentPlayer = gameState.players[gameState.currentPlayer];
 
-    // Find ALL goats owned by current player, evaluate each move
-    // Priority: 1) Move up on target mountain, 2) Move any goat to bottom of target
+    // Find ALL goats owned by current player (on board)
     const allGoats = [];
 
     for (let mIdx = 0; mIdx < mountains.length; mIdx++) {
@@ -137,10 +132,18 @@ function makeMove() {
                 allGoats.push({
                     fromMountain: mIdx,
                     fromSpace: sIdx,
-                    goatIdx: goatIdx
+                    goatIdx: goatIdx,
+                    fromHand: false
                 });
             }
         }
+    }
+
+    // If no goats on board but have goats in hand, place from hand
+    if (allGoats.length === 0 && currentPlayer.inHand > 0) {
+        allGoats.push({
+            fromHand: true
+        });
     }
 
     if (allGoats.length === 0) {
@@ -153,30 +156,43 @@ function makeMove() {
     let bestPriority = -1;
 
     for (const goat of allGoats) {
-        const isOnTargetMountain = goat.fromMountain === targetMountainIdx;
-        const canMoveUp = isOnTargetMountain && goat.fromSpace + 1 < mountains[targetMountainIdx].spaces;
-
-        if (canMoveUp) {
-            // Priority 1: Move up on target mountain
-            const priority = 10;
+        if (goat.fromHand) {
+            // Place from hand to bottom of target mountain
+            const priority = 5; // Medium priority
             if (priority > bestPriority) {
                 bestPriority = priority;
                 bestMove = {
-                    ...goat,
-                    toMountain: targetMountainIdx,
-                    toSpace: goat.fromSpace + 1
-                };
-            }
-        } else {
-            // Priority 0: Move any goat to bottom of target mountain (cross-mountain move)
-            const priority = 0;
-            if (priority > bestPriority) {
-                bestPriority = priority;
-                bestMove = {
-                    ...goat,
+                    fromHand: true,
                     toMountain: targetMountainIdx,
                     toSpace: 0
                 };
+            }
+        } else {
+            const isOnTargetMountain = goat.fromMountain === targetMountainIdx;
+            const canMoveUp = isOnTargetMountain && goat.fromSpace + 1 < mountains[targetMountainIdx].spaces;
+
+            if (canMoveUp) {
+                // Priority 1: Move up on target mountain
+                const priority = 10;
+                if (priority > bestPriority) {
+                    bestPriority = priority;
+                    bestMove = {
+                        ...goat,
+                        toMountain: targetMountainIdx,
+                        toSpace: goat.fromSpace + 1
+                    };
+                }
+            } else {
+                // Priority 0: Move any goat to bottom of target mountain (cross-mountain move)
+                const priority = 0;
+                if (priority > bestPriority) {
+                    bestPriority = priority;
+                    bestMove = {
+                        ...goat,
+                        toMountain: targetMountainIdx,
+                        toSpace: 0
+                    };
+                }
             }
         }
     }
@@ -187,8 +203,16 @@ function makeMove() {
     }
 
     // Execute the move
-    const goats = gameState.board[bestMove.fromMountain][bestMove.fromSpace];
-    const goat = goats.splice(bestMove.goatIdx, 1)[0];
+    let goat;
+    if (bestMove.fromHand) {
+        // Place from hand
+        currentPlayer.inHand--;
+        goat = { player: gameState.currentPlayer, color: currentPlayer.color };
+    } else {
+        // Move from board
+        const goats = gameState.board[bestMove.fromMountain][bestMove.fromSpace];
+        goat = goats.splice(bestMove.goatIdx, 1)[0];
+    }
 
     moveGoatToSpace(goat, bestMove.toMountain, bestMove.toSpace);
 }
@@ -219,16 +243,20 @@ function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
     gameState.selectedDice.sort((a, b) => b - a).forEach(idx => gameState.diceRoll.splice(idx, 1));
     gameState.selectedDice = [];
 
-    renderBoard();
-    renderPlayers();
+    // Add delay for animation/readability
+    setTimeout(() => {
+        renderBoard();
+        renderPlayers();
 
-    if (gameState.diceRoll.length === 0) {
-        endTurn();
-    } else {
-        gameState.phase = 'group';
-        renderDice();
-        updateStatus('Group more dice or end turn');
-    }
+        if (gameState.diceRoll.length === 0) {
+            setTimeout(() => endTurn(), 500);
+        } else {
+            gameState.phase = 'group';
+            renderDice();
+            updateStatus('Group more dice or end turn');
+            document.getElementById('make-move').disabled = false;
+        }
+    }, 400); // 400ms delay to see the move
 }
 
 function renderBoard() {
@@ -239,6 +267,7 @@ function renderBoard() {
         // Clear existing goats
         mountainElement.querySelectorAll('.goat, .goat-at-base').forEach(g => g.remove());
 
+        // Render goats on the board (in spaces)
         for (let sIdx = 0; sIdx < mountain.spaces; sIdx++) {
             // HTML: spaces[0]=peak, spaces[last]=bottom
             // State: board[mIdx][0]=bottom, board[mIdx][last]=peak
@@ -250,35 +279,39 @@ function renderBoard() {
 
             const goats = gameState.board[mIdx][stateIdx];
 
-            // Special handling for bottom space (stateIdx === 0)
-            if (stateIdx === 0) {
-                // Render goats BELOW the mountain, not in the space
-                goats.forEach((goat, gIdx) => {
-                    const goatEl = document.createElement('div');
-                    goatEl.className = `goat-at-base goat-${goat.color}`;
-                    goatEl.textContent = '🐐';
-                    // Random horizontal positioning
-                    const randomOffset = (Math.random() - 0.5) * 30;
-                    goatEl.style.left = `calc(50% + ${randomOffset}px)`;
-                    goatEl.style.transform = 'translateX(-50%)';
-                    mountainElement.appendChild(goatEl);
-                });
-            } else {
-                // Normal rendering for other spaces with random positioning
-                goats.forEach((goat, gIdx) => {
-                    const goatEl = document.createElement('div');
-                    goatEl.className = `goat goat-${goat.color}`;
-                    goatEl.textContent = '🐐';
-                    // Random positioning within the space
-                    const randomX = 20 + Math.random() * 60;
-                    const randomY = 20 + Math.random() * 60;
-                    goatEl.style.left = `${randomX}%`;
-                    goatEl.style.top = `${randomY}%`;
-                    goatEl.style.transform = 'translate(-50%, -50%)';
-                    spaceElement.appendChild(goatEl);
-                });
-            }
+            // All goats on the board render inside their spaces
+            goats.forEach((goat, gIdx) => {
+                const goatEl = document.createElement('div');
+                goatEl.className = `goat goat-${goat.color}`;
+                goatEl.textContent = '🐐';
+                // Random positioning within the space
+                const randomX = 20 + Math.random() * 60;
+                const randomY = 20 + Math.random() * 60;
+                goatEl.style.left = `${randomX}%`;
+                goatEl.style.top = `${randomY}%`;
+                goatEl.style.transform = 'translate(-50%, -50%)';
+                spaceElement.appendChild(goatEl);
+            });
         }
+
+        // Render goats in hand (reserve goats) BELOW the mountain
+        gameState.players.forEach((player, pIdx) => {
+            const goatsInHand = player.inHand || 0;
+            // Show up to 3 goats visually per mountain (spread across mountains)
+            const goatsToShow = Math.min(3, goatsInHand);
+            for (let i = 0; i < goatsToShow; i++) {
+                const goatEl = document.createElement('div');
+                goatEl.className = `goat-at-base goat-${player.color}`;
+                goatEl.textContent = '🐐';
+                // Random horizontal AND vertical positioning
+                const randomX = (Math.random() - 0.5) * 50 + (pIdx - 1) * 20; // spread by player
+                const randomY = Math.random() * 20; // 0-20px vertical spread
+                goatEl.style.left = `calc(50% + ${randomX}px)`;
+                goatEl.style.bottom = `${-35 - randomY}px`;
+                goatEl.style.transform = 'translateX(-50%)';
+                mountainElement.appendChild(goatEl);
+            }
+        });
     });
 }
 
@@ -286,7 +319,8 @@ function renderPlayers() {
     gameState.players.forEach((player, idx) => {
         const el = document.getElementById(`player-${idx + 1}`);
         el.className = 'player' + (idx === gameState.currentPlayer ? ' active' : '');
-        el.querySelector('.player-score span').textContent = player.score;
+        el.querySelector('.player-score > span').textContent = player.score;
+        el.querySelector('.in-hand').textContent = player.inHand || 0;
     });
 }
 
