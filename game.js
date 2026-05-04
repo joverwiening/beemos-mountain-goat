@@ -219,6 +219,7 @@ function makeMove() {
 
 function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
     const mountain = mountains[mountainIdx];
+    console.log(`Moving goat to mountain ${mountain.number}, space ${spaceIdx} (total spaces: ${mountain.spaces})`);
     const destGoats = gameState.board[mountainIdx][spaceIdx];
     const isPeak = spaceIdx === mountain.spaces - 1;
 
@@ -431,6 +432,7 @@ function playAITurn() {
     setTimeout(() => {
         // Roll dice
         rollDice();
+        updateStatus(`${player.name} rolled: ${gameState.diceRoll.join(', ')}`);
 
         setTimeout(() => {
             // Find best grouping and make move
@@ -438,6 +440,8 @@ function playAITurn() {
             if (bestGroup) {
                 gameState.selectedDice = bestGroup.indices;
                 gameState.diceSum = bestGroup.sum;
+                const selectedDice = bestGroup.indices.map(i => gameState.diceRoll[i]);
+                updateStatus(`${player.name} grouped: ${selectedDice.join('+')} = ${bestGroup.sum}`);
                 makeMove();
 
                 // If more dice remain, play again
