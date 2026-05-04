@@ -295,20 +295,23 @@ function renderBoard() {
             });
         }
 
-        // Render goats in hand (reserve goats) BELOW the mountain
+        // Render reserve goats (1 per player per mountain if they have goats remaining)
+        // Each player starts with 6 goats (1 for each mountain)
+        // Show reserve goat below this mountain if this is "their" mountain
+        const mountainNum = mountain.number;
+        const reserveSlot = mountainNum - 5; // 0-5 for mountains 5-10
+
         gameState.players.forEach((player, pIdx) => {
             const goatsInHand = player.inHand || 0;
-            // Show up to 3 goats visually per mountain (spread across mountains)
-            const goatsToShow = Math.min(3, goatsInHand);
-            for (let i = 0; i < goatsToShow; i++) {
+            // Show reserve goat if player still has goats for this slot
+            if (goatsInHand > reserveSlot) {
                 const goatEl = document.createElement('div');
                 goatEl.className = `goat-at-base goat-${player.color}`;
                 goatEl.textContent = '🐐';
-                // Random horizontal AND vertical positioning
-                const randomX = (Math.random() - 0.5) * 50 + (pIdx - 1) * 20; // spread by player
-                const randomY = Math.random() * 20; // 0-20px vertical spread
-                goatEl.style.left = `calc(50% + ${randomX}px)`;
-                goatEl.style.bottom = `${-35 - randomY}px`;
+                // Position based on player index - spread horizontally
+                const xOffset = (pIdx - 1) * 25; // -25, 0, +25 for 3 players
+                goatEl.style.left = `calc(50% + ${xOffset}px)`;
+                goatEl.style.bottom = `-40px`;
                 goatEl.style.transform = 'translateX(-50%)';
                 mountainElement.appendChild(goatEl);
             }
