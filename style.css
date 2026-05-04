@@ -6,20 +6,38 @@ body {
 }
 
 #game-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    grid-template-areas:
+        "title title"
+        "board controls"
+        "board controls";
 }
 
 h1 {
+    grid-area: title;
     text-align: center;
     margin-bottom: 20px;
+}
+
+#game-area {
+    grid-area: board;
+}
+
+#controls-area {
+    grid-area: controls;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 #dice-area {
     background: #1a1f24;
     padding: 20px;
     border-radius: 10px;
-    margin-bottom: 20px;
 }
 
 #dice-display {
@@ -68,7 +86,7 @@ button:disabled {
     display: flex;
     gap: 15px;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     padding: 10px;
     background: #1a1f24;
     border-radius: 8px;
@@ -85,7 +103,6 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 10px;
-    margin-bottom: 20px;
 }
 
 .mountain {

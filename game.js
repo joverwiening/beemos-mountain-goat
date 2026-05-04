@@ -6,9 +6,9 @@ const gameState = {
     selectedDice: [],
     diceSum: 0,
     players: [
-        { name: 'You', color: 'yellow', score: 0, isAI: false, inHand: 12 },
-        { name: 'AI 1', color: 'red', score: 0, isAI: true, inHand: 12 },
-        { name: 'AI 2', color: 'cyan', score: 0, isAI: true, inHand: 12 }
+        { name: 'You', color: 'yellow', score: 0, isAI: false, inHand: 6 },
+        { name: 'AI 1', color: 'red', score: 0, isAI: true, inHand: 6 },
+        { name: 'AI 2', color: 'cyan', score: 0, isAI: true, inHand: 6 }
     ],
     board: {}, // key: mountain index -> array of space arrays (bottom to top)
     pointTokens: { 5: 12, 6: 11, 7: 10, 8: 9, 9: 8, 10: 7 },

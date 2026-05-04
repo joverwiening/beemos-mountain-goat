@@ -10,8 +10,68 @@
     <div id="game-container">
         <h1>Mountain Goats</h1>
 
-        <!-- Dice Rolling Area -->
-        <div id="dice-area">
+        <!-- Game Board Area -->
+        <div id="game-area">
+            <!-- Point Tokens Display -->
+            <div id="point-tokens">
+                <div class="token-stack" data-mountain="5">5: <span id="tokens-5">12</span></div>
+                <div class="token-stack" data-mountain="6">6: <span id="tokens-6">11</span></div>
+                <div class="token-stack" data-mountain="7">7: <span id="tokens-7">10</span></div>
+                <div class="token-stack" data-mountain="8">8: <span id="tokens-8">9</span></div>
+                <div class="token-stack" data-mountain="9">9: <span id="tokens-9">8</span></div>
+                <div class="token-stack" data-mountain="10">10: <span id="tokens-10">7</span></div>
+            </div>
+
+            <!-- Game Board - 18 Mountain Cards -->
+            <div id="game-board">
+                <!-- Mountain 5 (4 cards) -->
+                <div class="mountain mountain-5">
+                    <div class="space peak" data-mountain="5" data-number="5">5</div>
+                    <div class="space" data-mountain="5" data-number="5">5</div>
+                    <div class="space" data-mountain="5" data-number="5">5</div>
+                    <div class="space bottom" data-mountain="5" data-number="5">5</div>
+                </div>
+
+                <!-- Mountain 6 (4 cards) -->
+                <div class="mountain mountain-6">
+                    <div class="space peak" data-mountain="6" data-number="6">6</div>
+                    <div class="space" data-mountain="6" data-number="6">6</div>
+                    <div class="space" data-mountain="6" data-number="6">6</div>
+                    <div class="space bottom" data-mountain="6" data-number="6">6</div>
+                </div>
+
+                <!-- Mountain 7 (3 cards) -->
+                <div class="mountain mountain-7">
+                    <div class="space peak" data-mountain="7" data-number="7">7</div>
+                    <div class="space" data-mountain="7" data-number="7">7</div>
+                    <div class="space bottom" data-mountain="7" data-number="7">7</div>
+                </div>
+
+                <!-- Mountain 8 (3 cards) -->
+                <div class="mountain mountain-8">
+                    <div class="space peak" data-mountain="8" data-number="8">8</div>
+                    <div class="space" data-mountain="8" data-number="8">8</div>
+                    <div class="space bottom" data-mountain="8" data-number="8">8</div>
+                </div>
+
+                <!-- Mountain 9 (2 cards) -->
+                <div class="mountain mountain-9">
+                    <div class="space peak" data-mountain="9" data-number="9">9</div>
+                    <div class="space bottom" data-mountain="9" data-number="9">9</div>
+                </div>
+
+                <!-- Mountain 10 (2 cards) -->
+                <div class="mountain mountain-10">
+                    <div class="space peak" data-mountain="10" data-number="10">10</div>
+                    <div class="space bottom" data-mountain="10" data-number="10">10</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div id="controls-area">
+            <!-- Dice Rolling Area -->
+            <div id="dice-area">
             <div id="dice-display">
                 <div class="die" id="die-1">?</div>
                 <div class="die" id="die-2">?</div>
@@ -23,65 +83,10 @@
             <div id="selected-dice"></div>
             <button id="make-move" disabled>Make Move</button>
             <button id="end-turn" disabled>End Turn</button>
-        </div>
-
-        <!-- Point Tokens Display -->
-        <div id="point-tokens">
-            <div class="token-stack" data-mountain="5">5: <span id="tokens-5">12</span></div>
-            <div class="token-stack" data-mountain="6">6: <span id="tokens-6">11</span></div>
-            <div class="token-stack" data-mountain="7">7: <span id="tokens-7">10</span></div>
-            <div class="token-stack" data-mountain="8">8: <span id="tokens-8">9</span></div>
-            <div class="token-stack" data-mountain="9">9: <span id="tokens-9">8</span></div>
-            <div class="token-stack" data-mountain="10">10: <span id="tokens-10">7</span></div>
-        </div>
-
-        <!-- Game Board - 18 Mountain Cards -->
-        <div id="game-board">
-            <!-- Mountain 5 (4 cards) -->
-            <div class="mountain mountain-5">
-                <div class="space peak" data-mountain="5" data-number="5">5</div>
-                <div class="space" data-mountain="5" data-number="5">5</div>
-                <div class="space" data-mountain="5" data-number="5">5</div>
-                <div class="space bottom" data-mountain="5" data-number="5">5</div>
             </div>
 
-            <!-- Mountain 6 (4 cards) -->
-            <div class="mountain mountain-6">
-                <div class="space peak" data-mountain="6" data-number="6">6</div>
-                <div class="space" data-mountain="6" data-number="6">6</div>
-                <div class="space" data-mountain="6" data-number="6">6</div>
-                <div class="space bottom" data-mountain="6" data-number="6">6</div>
-            </div>
-
-            <!-- Mountain 7 (3 cards) -->
-            <div class="mountain mountain-7">
-                <div class="space peak" data-mountain="7" data-number="7">7</div>
-                <div class="space" data-mountain="7" data-number="7">7</div>
-                <div class="space bottom" data-mountain="7" data-number="7">7</div>
-            </div>
-
-            <!-- Mountain 8 (3 cards) -->
-            <div class="mountain mountain-8">
-                <div class="space peak" data-mountain="8" data-number="8">8</div>
-                <div class="space" data-mountain="8" data-number="8">8</div>
-                <div class="space bottom" data-mountain="8" data-number="8">8</div>
-            </div>
-
-            <!-- Mountain 9 (2 cards) -->
-            <div class="mountain mountain-9">
-                <div class="space peak" data-mountain="9" data-number="9">9</div>
-                <div class="space bottom" data-mountain="9" data-number="9">9</div>
-            </div>
-
-            <!-- Mountain 10 (2 cards) -->
-            <div class="mountain mountain-10">
-                <div class="space peak" data-mountain="10" data-number="10">10</div>
-                <div class="space bottom" data-mountain="10" data-number="10">10</div>
-            </div>
-        </div>
-
-        <!-- Player Info -->
-        <div id="players">
+            <!-- Player Info -->
+            <div id="players">
             <div class="player active" id="player-1">
                 <div class="player-name">You (Yellow)</div>
                 <div class="player-score">Score: <span>0</span> | In Hand: <span class="in-hand">12</span></div>
@@ -96,8 +101,9 @@
             </div>
         </div>
 
-        <div id="game-status">
-            <p id="status-message">Player 1: Roll the dice</p>
+            <div id="game-status">
+                <p id="status-message">Player 1: Roll the dice</p>
+            </div>
         </div>
     </div>
 
