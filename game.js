@@ -310,8 +310,10 @@ function renderBoard() {
                 goatEl.textContent = '🐐';
                 // Position based on player index - spread horizontally
                 const xOffset = (pIdx - 1) * 25; // -25, 0, +25 for 3 players
+                // Position vertically based on mountain height (more spaces = lower position)
+                const baseOffset = 40 + (mountain.spaces * 15); // taller mountains = lower reserve position
                 goatEl.style.left = `calc(50% + ${xOffset}px)`;
-                goatEl.style.bottom = `-40px`;
+                goatEl.style.bottom = `-${baseOffset}px`;
                 goatEl.style.transform = 'translateX(-50%)';
                 mountainElement.appendChild(goatEl);
             }
@@ -332,8 +334,18 @@ function endTurn() {
     gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
     gameState.phase = 'roll';
     gameState.diceRoll = [];
+    gameState.selectedDice = [];
+    gameState.diceSum = 0;
+
+    // Reset UI
     document.getElementById('roll-dice').disabled = false;
+    document.getElementById('make-move').disabled = true;
+    document.getElementById('end-turn').disabled = true;
+    document.getElementById('selected-dice').textContent = '';
     document.querySelectorAll('.space').forEach(s => s.classList.remove('valid'));
+
+    // Clear dice display
+    renderDice();
     renderPlayers();
 
     const currentPlayer = gameState.players[gameState.currentPlayer];
