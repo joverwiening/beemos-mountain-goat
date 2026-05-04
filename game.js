@@ -83,13 +83,18 @@ function renderDice() {
 
 function checkValidSumsPossible() {
     const n = gameState.diceRoll.length;
+    console.log('Checking if valid sums possible from:', gameState.diceRoll);
     for (let mask = 1; mask < (1 << n); mask++) {
         let sum = 0;
         for (let i = 0; i < n; i++) {
             if (mask & (1 << i)) sum += gameState.diceRoll[i];
         }
-        if (sum >= 5 && sum <= 10) return true;
+        if (sum >= 5 && sum <= 10) {
+            console.log('Found valid sum:', sum);
+            return true;
+        }
     }
+    console.log('No valid sums possible, auto-ending turn');
     return false;
 }
 
@@ -241,7 +246,9 @@ function moveGoatToSpace(goat, mountainIdx, spaceIdx) {
     }
 
     // Remove used dice
+    console.log('Before removing dice:', gameState.diceRoll, 'Selected indices:', gameState.selectedDice);
     gameState.selectedDice.sort((a, b) => b - a).forEach(idx => gameState.diceRoll.splice(idx, 1));
+    console.log('After removing dice:', gameState.diceRoll);
     gameState.selectedDice = [];
 
     // Add delay for animation/readability
